@@ -1,0 +1,4 @@
+{
+  "editor.gotoLocation.alternativeDeclarationCommand": "editor.action.revealDefinition",
+  "editor.gotoLocation.alternativeDefinitionCommand": "editor.action.revealDefinition"
+}

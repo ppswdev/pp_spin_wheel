@@ -1,7 +1,5 @@
 library pp_spin_wheel;
 
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+export 'src/pp_spin_wheel.dart';
+export 'src/pp_spin_wheel_item.dart';
+export 'src/pp_spin_wheel_painters.dart';
