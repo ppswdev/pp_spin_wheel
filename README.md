@@ -10,13 +10,8 @@ Custom spin wheel. Makes it easier for code to implement wheel effects.
 
 ```yaml
 dependencies:
-  pp_spin_wheel: ^1.0.1
+  pp_spin_wheel: ^1.0.2
 ```
-
-<img src="https://github.com/user-attachments/assets/534ad9a3-9bdc-421e-8659-2b7b3f9a9966" alt="demo1" width="400" height="870">
-<img src="https://github.com/user-attachments/assets/9d85cde3-3720-4a2d-aa42-f2f2b3f80f03" alt="demo2" width="400" height="870">
-<img src="https://github.com/user-attachments/assets/b1c402ca-fcea-4c05-8d31-e95584ebb240" alt="demo3" width="400" height="870">
-<img src="https://github.com/user-attachments/assets/71bba4cc-d203-46b2-8ef1-3dc29db75910" alt="demo4" width="400" height="870">
 
 ## Usage
 

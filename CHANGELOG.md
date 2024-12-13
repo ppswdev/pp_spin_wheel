@@ -1,3 +1,7 @@
+## 1.0.2
+
+* tidy README.md
+
 ## 1.0.1
 
 * tidy README.md and tutorials
