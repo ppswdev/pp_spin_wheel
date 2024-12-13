@@ -1,10 +1,15 @@
+## 1.0.3
+
+* Optimized display problem
+* Tidy up code
+
 ## 1.0.2
 
-* tidy README.md
+* Tidy README.md
 
 ## 1.0.1
 
-* tidy README.md and tutorials
+* Tidy README.md and tutorials
 
 ## 1.0.0
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'pp_spin_wheel_item.dart';
 
+/// 绘制三角形
 class TrianglePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -24,6 +25,7 @@ class TrianglePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+/// 绘制转盘
 class WheelPainter extends CustomPainter {
   final List<PPSpinWheelItem> items;
   final double totalWeight;
@@ -83,7 +85,7 @@ class WheelPainter extends CustomPainter {
       // 如果被选中,绘制黑色半透明遮罩
       if (item.selected) {
         final overlayPaint = Paint()
-          ..color = Colors.black.withOpacity(0.3)
+          ..color = const Color.fromRGBO(0, 0, 0, 0.3)
           ..style = PaintingStyle.fill;
 
         canvas.drawArc(
@@ -152,7 +154,7 @@ class WheelPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-// 自定义动画曲线
+/// 自定义动画曲线
 class SpinningCurve extends Curve {
   @override
   double transformInternal(double t) {

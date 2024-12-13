@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'pp_spin_wheel_item.dart';
 import 'pp_spin_wheel_painters.dart';
 
+/// 旋转盘
 class PPSpinWheel extends StatefulWidget {
   final List<PPSpinWheelItem> items;
   final double size;
@@ -92,6 +93,7 @@ class _PPSpinWheelState extends State<PPSpinWheel>
     super.dispose();
   }
 
+  /// Start spin animation
   void _startSpinAnimation() {
     if (_isSpinning) return;
 
@@ -128,6 +130,7 @@ class _PPSpinWheelState extends State<PPSpinWheel>
     _animationController.forward();
   }
 
+  /// Tap wheel position
   void _onTapWheel(Offset localPosition) {
     if (_isSpinning) return;
 
@@ -169,6 +172,7 @@ class _PPSpinWheelState extends State<PPSpinWheel>
     }
   }
 
+  /// Start spin animation
   void startSpin() {
     widget.onStartPressed?.call();
     _isSpinning = false;

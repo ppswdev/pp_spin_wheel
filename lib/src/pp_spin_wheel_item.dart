@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// 旋转盘的item
 class PPSpinWheelItem {
   final String title;
   final Color bgColor;
@@ -13,6 +14,7 @@ class PPSpinWheelItem {
     this.selected = false,
   });
 
+  /// 复制一个item
   PPSpinWheelItem copyWith({
     String? title,
     Color? bgColor,
