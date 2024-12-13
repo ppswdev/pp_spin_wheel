@@ -1,6 +1,17 @@
+
+Custom spin wheel. Makes it easier for code to implement wheel effects.
+
 ## Features
 
-Custom rotating disarray, easy to achieve the lottery function.
+![Sample1](screenshots/sample1.png)
+![Sample2](screenshots/sample2.png)
+
+## Getting started
+
+```yaml
+dependencies:
+  pp_spin_wheel: ^1.0.1
+```
 
 ## Usage
 

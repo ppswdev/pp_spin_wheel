@@ -1,6 +1,6 @@
 name: pp_spin_wheel
-description: "Custom rotating disarray, easy to achieve the lottery function."
-version: 1.0.0
+description: "Custom spin wheel. Makes it easier for code to implement wheel effects."
+version: 1.0.1
 homepage: https://github.com/ppswdev/pp_spin_wheel
 
 environment:
