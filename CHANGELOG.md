@@ -1,3 +1,9 @@
+## 1.0.4
+
+* Added `indicatorAnimateStyle` style
+* Added `onItemSpinning` event
+*
+
 ## 1.0.3
 
 * Optimized display problem

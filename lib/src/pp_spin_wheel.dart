@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'pp_spin_wheel_item.dart';
 import 'pp_spin_wheel_painters.dart';
 
-/// 旋转盘
+/// 旋转轮盘
 class PPSpinWheel extends StatefulWidget {
   final List<PPSpinWheelItem> items;
   final double size;
@@ -14,6 +14,7 @@ class PPSpinWheel extends StatefulWidget {
   final Widget? overlay;
   final Widget? spinIcon;
   final Widget? indicator;
+  final int indicatorAnimateStyle;
   final bool enableWeight;
   final TextStyle? textStyle;
   final int numberOfTurns;
@@ -23,6 +24,7 @@ class PPSpinWheel extends StatefulWidget {
   final Function(int)? onAnimationEnd;
   final VoidCallback? onSpinFastAudio;
   final VoidCallback? onSpinSlowAudio;
+  final Function(int)? onItemSpinning;
 
   const PPSpinWheel({
     super.key,
@@ -34,6 +36,7 @@ class PPSpinWheel extends StatefulWidget {
     this.overlay,
     this.spinIcon,
     this.indicator,
+    this.indicatorAnimateStyle = 0,
     this.enableWeight = false,
     this.textStyle,
     this.numberOfTurns = 12,
@@ -43,6 +46,7 @@ class PPSpinWheel extends StatefulWidget {
     this.onAnimationEnd,
     this.onSpinFastAudio,
     this.onSpinSlowAudio,
+    this.onItemSpinning,
   });
 
   @override
@@ -50,10 +54,19 @@ class PPSpinWheel extends StatefulWidget {
 }
 
 class _PPSpinWheelState extends State<PPSpinWheel>
-    with SingleTickerProviderStateMixin {
-  List<double> _itemAngles = [];
+    with TickerProviderStateMixin {
+  //转盘动画
   late AnimationController _animationController;
   Animation<double>? _spinAnimation;
+
+  //指示器默认动画
+  AnimationController? _indicatorController;
+
+  //指示器抖动动画
+  AnimationController? _shakeController;
+  Animation<double>? _shakeAnimation;
+
+  List<double> _itemAngles = [];
   var _isSpinning = false;
   var _currentAngle = 0.0;
   var _currentItemIndex = 0;
@@ -82,18 +95,99 @@ class _PPSpinWheelState extends State<PPSpinWheel>
         setState(() {
           _isSpinning = false;
         });
+
+        if (widget.indicatorAnimateStyle == 0) {
+          _indicatorController?.reverse();
+        } else {
+          stopShaking();
+        }
+
         widget.onAnimationEnd?.call(_currentItemIndex);
       }
     });
+
+    if (widget.indicatorAnimateStyle == 0) {
+      initIndicatorAnimation();
+    } else {
+      initShakeAnimation();
+    }
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _indicatorController?.dispose();
+    _shakeController?.dispose();
     super.dispose();
   }
 
-  /// Start spin animation
+  /// 指示器默认动画
+  void initIndicatorAnimation() {
+    _indicatorController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+      reverseDuration: const Duration(milliseconds: 500),
+      value: 0,
+      lowerBound: 0.0,
+      upperBound: 0.52,
+    );
+
+    _indicatorController?.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _indicatorController?.reverse();
+      }
+    });
+  }
+
+  /// 指示器抖动动画
+  void initShakeAnimation() {
+    // 1. 初始化抖动动画控制器
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500), // 一次抖动的时长
+    );
+
+    // 2. 创建抖动动画
+    _shakeAnimation = TweenSequence<double>([
+      // 向左摇摆
+      TweenSequenceItem(
+        tween: Tween(begin: 0.0, end: -0.13) // -15度
+            .chain(CurveTween(curve: Curves.easeOut)),
+        weight: 25.0,
+      ),
+      // 向右摇摆
+      TweenSequenceItem(
+        tween: Tween(begin: -0.13, end: 0.13) // +15度
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 50.0,
+      ),
+      // 回到中间
+      TweenSequenceItem(
+        tween: Tween(begin: 0.13, end: 0.0)
+            .chain(CurveTween(curve: Curves.easeIn)),
+        weight: 25.0,
+      ),
+    ]).animate(_shakeController!);
+
+    // 3. 设置动画循环
+    _shakeController?.addStatusListener((status) {
+      if (status == AnimationStatus.completed && _isSpinning) {
+        _shakeController?.reset();
+        _shakeController?.forward();
+      }
+    });
+  }
+
+  void stopShaking() {
+    _shakeController?.stop();
+    // 平滑回到中间位置
+    _shakeController?.animateTo(
+      0.0,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+    );
+  }
+
   void _startSpinAnimation() {
     if (_isSpinning) return;
 
@@ -128,9 +222,16 @@ class _PPSpinWheelState extends State<PPSpinWheel>
 
     _animationController.reset();
     _animationController.forward();
+
+    if (widget.indicatorAnimateStyle == 0) {
+      _indicatorController?.reset();
+      _indicatorController?.repeat(reverse: true);
+    } else {
+      _shakeController?.reset();
+      _shakeController?.forward();
+    }
   }
 
-  /// Tap wheel position
   void _onTapWheel(Offset localPosition) {
     if (_isSpinning) return;
 
@@ -172,7 +273,6 @@ class _PPSpinWheelState extends State<PPSpinWheel>
     }
   }
 
-  /// Start spin animation
   void startSpin() {
     widget.onStartPressed?.call();
     _isSpinning = false;
@@ -204,6 +304,20 @@ class _PPSpinWheelState extends State<PPSpinWheel>
             animation: _animationController,
             builder: (context, child) {
               _currentAngle = _spinAnimation?.value ?? _currentAngle;
+              // 计算当前指向的item
+              if (_itemAngles.isNotEmpty) {
+                final normalizedAngle =
+                    (_currentAngle % (2 * pi) + 2 * pi) % (2 * pi);
+                for (var i = 0; i < _itemAngles.length; i++) {
+                  final startAngle = i == 0 ? 0 : _itemAngles[i - 1];
+                  final endAngle = _itemAngles[i];
+                  if (normalizedAngle >= startAngle &&
+                      normalizedAngle < endAngle) {
+                    widget.onItemSpinning?.call(i);
+                    break;
+                  }
+                }
+              }
               return Transform.rotate(
                 angle: _currentAngle,
                 child: GestureDetector(
@@ -239,11 +353,23 @@ class _PPSpinWheelState extends State<PPSpinWheel>
         // 轮盘指示器
         Align(
           alignment: Alignment.topCenter,
-          child: widget.indicator ??
-              CustomPaint(
-                size: const Size(30, 30),
-                painter: TrianglePainter(),
-              ),
+          child: AnimatedBuilder(
+            animation: widget.indicatorAnimateStyle == 0
+                ? _indicatorController!
+                : _shakeAnimation!,
+            builder: (context, child) {
+              return Transform.rotate(
+                angle: widget.indicatorAnimateStyle == 0
+                    ? -_indicatorController!.value
+                    : _shakeAnimation!.value,
+                child: widget.indicator ??
+                    CustomPaint(
+                      size: const Size(30, 30),
+                      painter: TrianglePainter(),
+                    ),
+              );
+            },
+          ),
         ),
         // 开始按钮
         widget.spinIcon != null

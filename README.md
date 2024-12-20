@@ -10,7 +10,7 @@ Custom spin wheel. Makes it easier for code to implement wheel effects.
 
 ```yaml
 dependencies:
-  pp_spin_wheel: ^1.0.3
+  pp_spin_wheel: ^1.0.4
 ```
 
 ## Usage
@@ -77,6 +77,7 @@ class _GameWheelPageState extends State<GameWheelPage> {
           //   width: 28,
           //   height: 47,
           // ),
+           indicatorAnimateStyle: 0,
           enableWeight: false,
           textStyle: const TextStyle(
             fontSize: 16,
@@ -88,6 +89,9 @@ class _GameWheelPageState extends State<GameWheelPage> {
           numberOfTurns: 10,
           onItemPressed: (index) {
             print('index: $index');
+          },
+          onItemSpinning: (index) {
+            // Play spin audio
           },
           onStartPressed: () {
             //Play start audio

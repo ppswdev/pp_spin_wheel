@@ -1,6 +1,6 @@
 name: pp_spin_wheel
 description: "Custom spin wheel. Makes it easier for code to implement wheel effects."
-version: 1.0.3
+version: 1.0.4
 homepage: https://github.com/ppswdev/pp_spin_wheel
 
 environment:

@@ -85,7 +85,7 @@ class WheelPainter extends CustomPainter {
       // 如果被选中,绘制黑色半透明遮罩
       if (item.selected) {
         final overlayPaint = Paint()
-          ..color = const Color.fromRGBO(0, 0, 0, 0.3)
+          ..color = const Color.fromRGBO(0, 0, 0, 0.6)
           ..style = PaintingStyle.fill;
 
         canvas.drawArc(
