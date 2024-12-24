@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import 'pp_spin_wheel_item.dart';
 
-/// 绘制三角形
 class TrianglePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -25,7 +24,6 @@ class TrianglePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// 绘制转盘
 class WheelPainter extends CustomPainter {
   final List<PPSpinWheelItem> items;
   final double totalWeight;
@@ -82,51 +80,50 @@ class WheelPainter extends CustomPainter {
         paint,
       );
 
-      // 如果被选中,绘制黑色半透明遮罩
-      if (item.selected) {
-        final overlayPaint = Paint()
-          ..color = const Color.fromRGBO(0, 0, 0, 0.6)
-          ..style = PaintingStyle.fill;
-
-        canvas.drawArc(
-          Rect.fromCircle(center: center, radius: radius),
-          startAngle,
-          sweepAngle,
-          true,
-          overlayPaint,
-        );
-      }
-
-      // 计算可用的扇形宽度
-      final arcWidth = radius * sin(sweepAngle / 2) * 2;
-
       // 绘制文字
       var scaledTextStyle = textStyle;
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: item.title,
-          style: scaledTextStyle,
-        ),
+      final title = item.title;
+
+      // 先测试文字宽度是否超出radius
+      final testPainter = TextPainter(
+        text: TextSpan(text: title, style: scaledTextStyle),
         textDirection: TextDirection.ltr,
       );
-      textPainter.layout();
+      testPainter.layout();
 
-      // 如果文字宽度超过扇形可用宽度的80%,缩小字体
-      if (textPainter.width > arcWidth * 0.8) {
-        // 计算缩放因子,但限制最小缩放为0.8
-        var scaleFactor = (arcWidth * 0.8) / textPainter.width;
-        scaleFactor = scaleFactor < 0.8 ? 0.8 : scaleFactor;
+      final lines = <String>[];
+      if (testPainter.width > radius * 0.8) {
+        // 超出radius时按每10个字符换行
+        // 判断是否包含中文字符
+        bool hasChinese = RegExp(r'[\u4e00-\u9fa5]').hasMatch(title);
+        int step = hasChinese ? 8 : 15;
 
-        scaledTextStyle = textStyle.copyWith(
-          fontSize: (textStyle.fontSize ?? 16) * scaleFactor,
-        );
-
-        textPainter.text = TextSpan(
-          text: item.title,
-          style: scaledTextStyle,
-        );
-        textPainter.layout();
+        for (var i = 0; i < title.length; i += step) {
+          final end = i + step > title.length ? title.length : i + step;
+          lines.add(title.substring(i, end));
+        }
+      } else {
+        // 未超出时直接显示全部
+        lines.add(title);
       }
+
+      final textPainter = TextPainter(
+        textDirection: TextDirection.ltr,
+        textAlign: TextAlign.center,
+        maxLines: lines.length,
+        text: TextSpan(
+          text: lines.first,
+          style: scaledTextStyle,
+          children: lines
+              .skip(1)
+              .map((line) => TextSpan(
+                    text: '\n$line',
+                    style: scaledTextStyle,
+                  ))
+              .toList(),
+        ),
+      );
+      textPainter.layout();
 
       // 计算文字位置 - 在扇形中心
       final textAngle = startAngle + sweepAngle / 2;
@@ -142,6 +139,21 @@ class WheelPainter extends CustomPainter {
           canvas, Offset(-textPainter.width / 2, -textPainter.height / 2));
       canvas.restore();
 
+      // 如果被选中,绘制黑色半透明遮罩
+      if (item.selected) {
+        final overlayPaint = Paint()
+          ..color = const Color.fromRGBO(0, 0, 0, 0.6)
+          ..style = PaintingStyle.fill;
+
+        canvas.drawArc(
+          Rect.fromCircle(center: center, radius: radius),
+          startAngle,
+          sweepAngle,
+          true,
+          overlayPaint,
+        );
+      }
+
       startAngle += sweepAngle;
     }
     // print(
@@ -154,7 +166,7 @@ class WheelPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-/// 自定义动画曲线
+// 自定义动画曲线
 class SpinningCurve extends Curve {
   @override
   double transformInternal(double t) {

@@ -191,15 +191,21 @@ class _PPSpinWheelState extends State<PPSpinWheel>
   void _startSpinAnimation() {
     if (_isSpinning) return;
 
-    setState(() {
-      _isSpinning = true;
-    });
-
     // 保持当前角度,避免突然跳转
     List<int> availableIndexs = List.generate(widget.items.length, (i) => i);
     if (widget.filterIndexs != null) {
       availableIndexs.removeWhere((i) => widget.filterIndexs!.contains(i));
     }
+    print('availableIndexs: $availableIndexs');
+    if (availableIndexs.isEmpty) {
+      _isSpinning = false;
+      return;
+    }
+
+    setState(() {
+      _isSpinning = true;
+    });
+
     _currentItemIndex =
         availableIndexs[Random().nextInt(availableIndexs.length)];
     _currentAngle = 0.0;
