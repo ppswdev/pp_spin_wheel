@@ -96,7 +96,7 @@ class WheelPainter extends CustomPainter {
         // 超出radius时按每10个字符换行
         // 判断是否包含中文字符
         bool hasChinese = RegExp(r'[\u4e00-\u9fa5]').hasMatch(title);
-        int step = hasChinese ? 8 : 15;
+        int step = hasChinese ? 8 : (item.selected ? 8 : 10);
 
         for (var i = 0; i < title.length; i += step) {
           final end = i + step > title.length ? title.length : i + step;
@@ -106,24 +106,6 @@ class WheelPainter extends CustomPainter {
         // 未超出时直接显示全部
         lines.add(title);
       }
-
-      final textPainter = TextPainter(
-        textDirection: TextDirection.ltr,
-        textAlign: TextAlign.center,
-        maxLines: lines.length,
-        text: TextSpan(
-          text: lines.first,
-          style: scaledTextStyle,
-          children: lines
-              .skip(1)
-              .map((line) => TextSpan(
-                    text: '\n$line',
-                    style: scaledTextStyle,
-                  ))
-              .toList(),
-        ),
-      );
-      textPainter.layout();
 
       // 计算文字位置 - 在扇形中心
       final textAngle = startAngle + sweepAngle / 2;
@@ -135,8 +117,71 @@ class WheelPainter extends CustomPainter {
       canvas.save();
       canvas.translate(textX, textY);
       canvas.rotate(textAngle + pi);
-      textPainter.paint(
-          canvas, Offset(-textPainter.width / 2, -textPainter.height / 2));
+
+      if (item.selected) {
+        // 绘制选中图标
+        final iconPainter = TextPainter(
+          text: TextSpan(
+            text: '✘',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: textStyle.fontSize! * 2,
+                fontWeight: FontWeight.bold),
+          ),
+          textDirection: TextDirection.ltr,
+        );
+        iconPainter.layout();
+
+        // 绘制图标
+        final textPainter = TextPainter(
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.center,
+          maxLines: lines.length,
+          text: TextSpan(
+            text: '  ${lines.first}',
+            style: scaledTextStyle,
+            children: lines
+                .skip(1)
+                .map((line) => TextSpan(
+                      text: '\n$line',
+                      style: scaledTextStyle,
+                    ))
+                .toList(),
+          ),
+        );
+        textPainter.layout();
+
+        // 计算整体宽度居中
+        final totalWidth = iconPainter.width + textPainter.width;
+        iconPainter.paint(
+            canvas, Offset(-totalWidth / 2, -iconPainter.height / 2));
+        textPainter.paint(
+            canvas,
+            Offset(
+                -totalWidth / 2 + iconPainter.width, -textPainter.height / 2));
+      } else {
+        // 未选中时只绘制文字
+        final textPainter = TextPainter(
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.center,
+          maxLines: lines.length,
+          text: TextSpan(
+            text: lines.first,
+            style: scaledTextStyle,
+            children: lines
+                .skip(1)
+                .map((line) => TextSpan(
+                      text: '\n$line',
+                      style: scaledTextStyle,
+                    ))
+                .toList(),
+          ),
+        );
+        textPainter.layout();
+        textPainter.paint(
+            canvas, Offset(-textPainter.width / 2, -textPainter.height / 2));
+      }
+
       canvas.restore();
 
       // 如果被选中,绘制黑色半透明遮罩

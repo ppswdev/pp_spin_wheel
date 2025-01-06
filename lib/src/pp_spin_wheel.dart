@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'pp_spin_wheel_item.dart';
 import 'pp_spin_wheel_painters.dart';
 
-/// 旋转轮盘
 class PPSpinWheel extends StatefulWidget {
   final List<PPSpinWheelItem> items;
   final double size;
@@ -50,10 +49,10 @@ class PPSpinWheel extends StatefulWidget {
   });
 
   @override
-  State<PPSpinWheel> createState() => _PPSpinWheelState();
+  State<PPSpinWheel> createState() => PPSpinWheelState();
 }
 
-class _PPSpinWheelState extends State<PPSpinWheel>
+class PPSpinWheelState extends State<PPSpinWheel>
     with TickerProviderStateMixin {
   //转盘动画
   late AnimationController _animationController;
@@ -67,6 +66,8 @@ class _PPSpinWheelState extends State<PPSpinWheel>
   Animation<double>? _shakeAnimation;
 
   List<double> _itemAngles = [];
+  // 存储每个item的中心点位置
+  final List<Offset> _itemCenters = [];
   var _isSpinning = false;
   var _currentAngle = 0.0;
   var _currentItemIndex = 0;
@@ -238,6 +239,10 @@ class _PPSpinWheelState extends State<PPSpinWheel>
     }
   }
 
+  void tapWheelItem(int index) {
+    _onTapWheel(_itemCenters[index]);
+  }
+
   void _onTapWheel(Offset localPosition) {
     if (_isSpinning) return;
 
@@ -291,6 +296,29 @@ class _PPSpinWheelState extends State<PPSpinWheel>
     final totalWeight = widget.enableWeight
         ? widget.items.fold(0.0, (sum, item) => sum + item.weight)
         : widget.items.length.toDouble();
+
+    // 计算每个item的中心点位置
+    _itemCenters.clear();
+    double startAngle = 0;
+    final radius = widget.wheelSize / 2;
+    final center = Size(widget.wheelSize, widget.wheelSize).center(Offset.zero);
+
+    for (var i = 0; i < widget.items.length; i++) {
+      final sweepAngle = widget.enableWeight
+          ? 2 * pi * (widget.items[i].weight / totalWeight)
+          : 2 * pi / widget.items.length;
+
+      // 计算扇形中心点的角度
+      final centerAngle = startAngle + sweepAngle / 2;
+
+      // 计算中心点坐标
+      final centerX = center.dx + radius * 0.7 * cos(centerAngle);
+      final centerY = center.dy + radius * 0.7 * sin(centerAngle);
+
+      _itemCenters.add(Offset(centerX, centerY));
+      startAngle += sweepAngle;
+    }
+
     return SizedBox(
       width: widget.size,
       height: widget.size,
@@ -306,47 +334,49 @@ class _PPSpinWheelState extends State<PPSpinWheel>
         ),
         // 轮盘
         Center(
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              _currentAngle = _spinAnimation?.value ?? _currentAngle;
-              // 计算当前指向的item
-              if (_itemAngles.isNotEmpty) {
-                final normalizedAngle =
-                    (_currentAngle % (2 * pi) + 2 * pi) % (2 * pi);
-                for (var i = 0; i < _itemAngles.length; i++) {
-                  final startAngle = i == 0 ? 0 : _itemAngles[i - 1];
-                  final endAngle = _itemAngles[i];
-                  if (normalizedAngle >= startAngle &&
-                      normalizedAngle < endAngle) {
-                    widget.onItemSpinning?.call(i);
-                    break;
+          child: ClipOval(
+            child: AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                _currentAngle = _spinAnimation?.value ?? _currentAngle;
+                // 计算当前指向的item
+                if (_itemAngles.isNotEmpty) {
+                  final normalizedAngle =
+                      (_currentAngle % (2 * pi) + 2 * pi) % (2 * pi);
+                  for (var i = 0; i < _itemAngles.length; i++) {
+                    final startAngle = i == 0 ? 0 : _itemAngles[i - 1];
+                    final endAngle = _itemAngles[i];
+                    if (normalizedAngle >= startAngle &&
+                        normalizedAngle < endAngle) {
+                      widget.onItemSpinning?.call(i);
+                      break;
+                    }
                   }
                 }
-              }
-              return Transform.rotate(
-                angle: _currentAngle,
-                child: GestureDetector(
-                  onTapDown: (details) => _onTapWheel(details.localPosition),
-                  child: CustomPaint(
-                    size: Size(widget.wheelSize, widget.wheelSize),
-                    painter: WheelPainter(
-                      items: widget.items,
-                      totalWeight: totalWeight,
-                      enableWeight: widget.enableWeight,
-                      textStyle: widget.textStyle ??
-                          const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                      onItemAnglesUpdated: (angles) {
-                        _itemAngles = angles;
-                      },
+                return Transform.rotate(
+                  angle: _currentAngle,
+                  child: GestureDetector(
+                    onTapDown: (details) => _onTapWheel(details.localPosition),
+                    child: CustomPaint(
+                      size: Size(widget.wheelSize, widget.wheelSize),
+                      painter: WheelPainter(
+                        items: widget.items,
+                        totalWeight: totalWeight,
+                        enableWeight: widget.enableWeight,
+                        textStyle: widget.textStyle ??
+                            const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                        onItemAnglesUpdated: (angles) {
+                          _itemAngles = angles;
+                        },
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
         // 轮盘覆盖图层

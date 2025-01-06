@@ -1,3 +1,8 @@
+## 1.0.6
+
+* Added use GlobalKey to call the Wheel functions
+* fix bug
+
 ## 1.0.5
 
 * fix bug

@@ -45,6 +45,9 @@ class GameWheelPage extends StatefulWidget {
 }
 
 class _GameWheelPageState extends State<GameWheelPage> {
+  //通过这个方式可以调用PPSpinWheel中的方法, 比如代码方式控制点击某项：_wheelKey.currentState?.tapWheelItem(index);
+  final GlobalKey<PPSpinWheelState> _wheelKey = GlobalKey<PPSpinWheelState>();
+
   var items = [
     const PPSpinWheelItem(
         title: 'Item 1',
@@ -79,6 +82,7 @@ class _GameWheelPageState extends State<GameWheelPage> {
       backgroundColor: Colors.white,
       body: Center(
         child: PPSpinWheel(
+          key: _wheelKey,
           size: 360,
           backgroundSize: 340,
           wheelSize: 300,
